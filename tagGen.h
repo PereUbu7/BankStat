@@ -49,7 +49,7 @@ struct taggedTransLList *findFirstTaggedElement(struct taggedTransLList *inEleme
 // Writes a table into file "fileName" or file pointer fp (cannot take both!) 
 // -If "fileName": open new file and write a line.
 // -If fp: append fp with line of values.
-FILE *writeCalcMonthTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num,  float argListOfValues[]);
+FILE *writeCalcMonthTabSeparatedTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num,  float argListOfValues[]);
 
 // Writes a file "fileName" with all monthly cost sums of tag "tagName"
 int writeMonthSumOfTag(char *fileName, char *tagName, struct tagLList *tagList, int verbose);
@@ -68,5 +68,13 @@ struct tagLList *findLastTag(struct tagLList *tagList);
 struct keyWord *findLastKeyword(struct keyWord *inKeyword);
 
 int tagListLen(struct tagLList *tagList, int verbose);
+
+void initHtmlTableFile(FILE *fp);
+
+void endHtmlTableFile(FILE *fp);
+
+void writeLabelToHtmlTableFile(FILE *fp, int month, int year);
+
+void writeValueToHtmlTableFile(FILE *fp, float value);
 
 #endif

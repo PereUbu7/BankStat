@@ -42,3 +42,22 @@ int replaceCharacterWithStringEnd(char *string, char character)
     }
     return 0;
 }
+
+char *getFileExtension(char *filename)
+{
+    char *p = filename;
+
+    /* Find end of filename */
+    while(*p != '\0')
+        p++;
+    
+    /* Back up untill period or back at start */
+    while(*p != '.' && p > filename)
+        p--;
+    
+    if(*p == '.')
+        return p+1;
+    else
+        return p;
+    
+}

@@ -144,31 +144,31 @@ struct tagLList *readTagToLList(FILE *fp, int verbose)
 // Writes a list tree of tags and keywords to file *fp. Returns true on success and false on failure
 int writeTagLListToFile(FILE *fp, struct tagLList *tagList, int verbose)
 {
-	struct keyWord *currentKeyWord = NULL;
-	struct tagLList *currentTag = tagList;
-	
-	printf("writeTagLListToFile: Entering\n");
-	
-	while( currentTag != NULL )
-	{
-		fprintf(fp, "[%s]\n", currentTag->name);
-		
-		currentKeyWord = currentTag->child;
-		
-		while( currentKeyWord != NULL )
-		{
-			fprintf(fp, "%s\n", currentKeyWord->name);
-			
-			currentKeyWord = currentKeyWord->next;
-		}
-		
-		fprintf(fp, "\n");
-		
-		currentTag = currentTag->next;
-	}
-	
-	printf("writeTagLListToFile: Exiting\n");
-	return 1;
+    struct keyWord *currentKeyWord = NULL;
+    struct tagLList *currentTag = tagList;
+
+    printf("writeTagLListToFile: Entering\n");
+
+    while (currentTag != NULL)
+    {
+        fprintf(fp, "[%s]\n", currentTag->name);
+
+        currentKeyWord = currentTag->child;
+
+        while (currentKeyWord != NULL)
+        {
+            fprintf(fp, "%s\n", currentKeyWord->name);
+
+            currentKeyWord = currentKeyWord->next;
+        }
+
+        fprintf(fp, "\n");
+
+        currentTag = currentTag->next;
+    }
+
+    printf("writeTagLListToFile: Exiting\n");
+    return 1;
 }
 
 // Create a new tag next after "tag" with name in *name. Set new relations. Return pointer to new tag
@@ -177,458 +177,539 @@ struct tagLList *createNextTag(struct tagLList *tag, char *name, int verbose)
     tag->next = malloc(sizeof(struct tagLList));
 
     tag->next->prev = tag;
-    
+
     tag = tag->next;
-    
+
     tag->child = NULL;
     tag->next = NULL;
     tag->transList = NULL;
-    tag->name = malloc(strlen(name)+1);
+    tag->name = malloc(strlen(name) + 1);
     strcpy(tag->name, name);
-    
-    return(tag);
+
+    return (tag);
 }
 
 struct keyWord *createNextKeyWord(struct keyWord *word, char *name, int verbose)
 {
-	
-	//if(verbose) printf("createNextKeyWord: Entering\n");
-	if( word == NULL )
-	{
-		printf("createNextKeyWord:ERROR! given keyword does not exist.\n");
-		return(NULL);
-	}
-		word->next = malloc(sizeof(struct keyWord));
-       
-		word->next->prev = word;
-		
-		word->next->parent = word->parent;
-       
-		word = word->next;
 
-		word->next = NULL;
-		word->name = malloc(strlen(name)+1);
-		strcpy(word->name, name);
-	
-	//if(verbose) printf("createNextKeyWord: Exiting\n");
-       
-       return(word);
+    //if(verbose) printf("createNextKeyWord: Entering\n");
+    if (word == NULL)
+    {
+        printf("createNextKeyWord:ERROR! given keyword does not exist.\n");
+        return (NULL);
+    }
+    word->next = malloc(sizeof(struct keyWord));
+
+    word->next->prev = word;
+
+    word->next->parent = word->parent;
+
+    word = word->next;
+
+    word->next = NULL;
+    word->name = malloc(strlen(name) + 1);
+    strcpy(word->name, name);
+
+    //if(verbose) printf("createNextKeyWord: Exiting\n");
+
+    return (word);
 }
 
 struct keyWord *createFirstKeyWord(struct tagLList *tag, char *name, int verbose)
 {
-	struct keyWord *word;
-	
-	//if(verbose) printf("createFirstKeyWord: Entering\n");
-	
-		word = malloc(sizeof(struct keyWord));
-       
-		word->prev = NULL;
-		word->parent = tag;
-		word->next = NULL;
-		word->name = malloc(strlen(name)+1);
-		strcpy(word->name, name);
-		
-		tag->child = word;
-	
-	//if(verbose) printf("createFirstKeyWord: Exiting\n");
-       
-       return(word);
+    struct keyWord *word;
+
+    //if(verbose) printf("createFirstKeyWord: Entering\n");
+
+    word = malloc(sizeof(struct keyWord));
+
+    word->prev = NULL;
+    word->parent = tag;
+    word->next = NULL;
+    word->name = malloc(strlen(name) + 1);
+    strcpy(word->name, name);
+
+    tag->child = word;
+
+    //if(verbose) printf("createFirstKeyWord: Exiting\n");
+
+    return (word);
 }
 
 // Frees a linked list of keyWord structs and returns the amount freed
 int freeKeyWordList(struct keyWord *word, int verbose)
 {
-       int numberOfFreedKeyWords = 0;
-	   
-       //if(verbose) printf("freeKeyWordList: Entering\n");
-       
-       if( word == NULL )
-       return(0);
-       
-       while(1)
-       {
-               if( word->name != NULL )
-               free(word->name);
-               //if(verbose) printf("\tFreed keyWord name #%d. ", numberOfFreedKeyWords+1);
-               
-               // If word-next points to SOMETHING; suspect keyWord struct
-               if( word->next != NULL )
-               {
-                word = word->next;
-                free(word->prev);
-                //if(verbose) printf("\tFreed keyWord #%d\n", numberOfFreedKeyWords+1);
-                numberOfFreedKeyWords++;
-               }
-               else{
-               break;}
-       }
-       if( word != NULL )
-       free(word);
-       //if(verbose) printf("\tFreed keyWord #%d\n", numberOfFreedKeyWords+1);
-	   
-	   //if(verbose) printf("freeKeyWordList: Exiting\n");
-       
-       return(numberOfFreedKeyWords+1);
+    int numberOfFreedKeyWords = 0;
+
+    //if(verbose) printf("freeKeyWordList: Entering\n");
+
+    if (word == NULL)
+        return (0);
+
+    while (1)
+    {
+        if (word->name != NULL)
+            free(word->name);
+        //if(verbose) printf("\tFreed keyWord name #%d. ", numberOfFreedKeyWords+1);
+
+        // If word-next points to SOMETHING; suspect keyWord struct
+        if (word->next != NULL)
+        {
+            word = word->next;
+            free(word->prev);
+            //if(verbose) printf("\tFreed keyWord #%d\n", numberOfFreedKeyWords+1);
+            numberOfFreedKeyWords++;
+        }
+        else
+        {
+            break;
+        }
+    }
+    if (word != NULL)
+        free(word);
+    //if(verbose) printf("\tFreed keyWord #%d\n", numberOfFreedKeyWords+1);
+
+    //if(verbose) printf("freeKeyWordList: Exiting\n");
+
+    return (numberOfFreedKeyWords + 1);
 }
 
 // Frees a linked list of tagLList structs and returns the amount of tags freed
 int freeTagList(struct tagLList *tag, int verbose)
 {
-       
-       int numberOfFreedTags = 0;
-       int numberOfFreedKeyWords = 0;
-       int numberOfFreedTaggedTrans = 0;
-       
-       //if(verbose) printf("freeTagList: Entering\n");
-       
-       if( tag == NULL )
-       return(0);
-       
-       while(1)
-       {
-               if( tag->name != NULL ){
-               free(tag->name);
-               //if(verbose) printf("Freed tag name #%d\n",numberOfFreedTags+1);
-               }
-               
-               if( tag->child != NULL ){
-               numberOfFreedKeyWords += freeKeyWordList(tag->child, verbose);
-               }
-               
-               if( tag->transList != NULL){
-               numberOfFreedTaggedTrans += freeTaggedTransList(tag->transList, verbose);
-			   }
-               
-       
-               // If tag-next points to SOMETHING; suspect tagLList struct
-               if( tag->next != NULL )
-               {
-                tag = tag->next;
-                free(tag->prev);
-                //if(verbose) printf("Freed tag #%d\n",numberOfFreedTags+1);
-                numberOfFreedTags++;
-               }
-               else
-               break;
-       }
-       if( tag != NULL )
-       free(tag);
-       //if(verbose) printf("Freed tag #%d\nExiting freeTagList\n\n",numberOfFreedTags+1);
-	   //if(verbose) printf("freeTagList: Exiting\n");
-       
-       return(numberOfFreedTags+1);
+
+    int numberOfFreedTags = 0;
+    int numberOfFreedKeyWords = 0;
+    int numberOfFreedTaggedTrans = 0;
+
+    //if(verbose) printf("freeTagList: Entering\n");
+
+    if (tag == NULL)
+        return (0);
+
+    while (1)
+    {
+        if (tag->name != NULL)
+        {
+            free(tag->name);
+            //if(verbose) printf("Freed tag name #%d\n",numberOfFreedTags+1);
+        }
+
+        if (tag->child != NULL)
+        {
+            numberOfFreedKeyWords += freeKeyWordList(tag->child, verbose);
+        }
+
+        if (tag->transList != NULL)
+        {
+            numberOfFreedTaggedTrans += freeTaggedTransList(tag->transList, verbose);
+        }
+
+        // If tag-next points to SOMETHING; suspect tagLList struct
+        if (tag->next != NULL)
+        {
+            tag = tag->next;
+            free(tag->prev);
+            //if(verbose) printf("Freed tag #%d\n",numberOfFreedTags+1);
+            numberOfFreedTags++;
+        }
+        else
+            break;
+    }
+    if (tag != NULL)
+        free(tag);
+    //if(verbose) printf("Freed tag #%d\nExiting freeTagList\n\n",numberOfFreedTags+1);
+    //if(verbose) printf("freeTagList: Exiting\n");
+
+    return (numberOfFreedTags + 1);
 }
 
-
-
-int writeTagFromLList(FILE *fp, struct tagLList *tags, int verbose) 
-{    
-    if(verbose)  printf("writeTagFromLList: Entering\n");    
+int writeTagFromLList(FILE *fp, struct tagLList *tags, int verbose)
+{
+    if (verbose)
+        printf("writeTagFromLList: Entering\n");
     // se till att fp är på rätt ställe i filen
     rewind(fp);
 
-    while(tags != NULL){
-               
-    // Writes "[name]\n" to file
-    fprintf(fp, "[%s]\n", tags->name);
-       
-    //print to stdout as test
-    if(verbose) printf("[%s]\n", tags->name);
-    
-    while(tags->child != NULL){
-                            
-                            // Write keyWord name to file
-                            fprintf(fp, "%s\n", tags->child->name);
-                            
-                            // printf to stdout as test
-                            if(verbose) printf("%s\n", tags->child->name);
-                            
-                            // Jump to next in keyWord list
-                            tags->child = tags->child->next;
-                            }
-    // Write newline before next [tag} to file                            
-    fprintf(fp, "\n");
-    
-    // Printf to stdout for test
-    if(verbose) printf("\n");
-    
-    // Jump to next in list
-    tags = tags->next;
-    
+    while (tags != NULL)
+    {
+
+        // Writes "[name]\n" to file
+        fprintf(fp, "[%s]\n", tags->name);
+
+        //print to stdout as test
+        if (verbose)
+            printf("[%s]\n", tags->name);
+
+        while (tags->child != NULL)
+        {
+
+            // Write keyWord name to file
+            fprintf(fp, "%s\n", tags->child->name);
+
+            // printf to stdout as test
+            if (verbose)
+                printf("%s\n", tags->child->name);
+
+            // Jump to next in keyWord list
+            tags->child = tags->child->next;
+        }
+        // Write newline before next [tag} to file
+        fprintf(fp, "\n");
+
+        // Printf to stdout for test
+        if (verbose)
+            printf("\n");
+
+        // Jump to next in list
+        tags = tags->next;
     }
-	
-	if(verbose)  printf("writeTagFromLList: Exiting\n");  
-    
-    
-   return(0);     
+
+    if (verbose)
+        printf("writeTagFromLList: Exiting\n");
+
+    return (0);
 }
 
 // Takes a linked list of transactions and sorts it according to the gnome sorting algorithm. Returns pointer to new start element
 struct taggedTransLList *gnomeSortTaggedTransLList(struct taggedTransLList *listStart, int verbose)
 {
-       struct taggedTransLList *currentElement = NULL, *upperBound = listStart->next;
-       
-       if(verbose) printf("gnomeSortTaggedTransLList: Entering\n");
-       
-       while( upperBound != NULL )
-       {
-              currentElement = upperBound;
+    struct taggedTransLList *currentElement = NULL, *upperBound = listStart->next;
 
-              while( currentElement->prev != NULL &&  !cmpTransDates(currentElement->prev->trans, currentElement->trans, verbose) )
-              {
+    if (verbose)
+        printf("gnomeSortTaggedTransLList: Entering\n");
 
-                     if( currentElement->prev->prev == NULL )
-                     {
-                         listStart = currentElement;
-                         swapAdjacentTaggedTransElements(currentElement->prev, currentElement, verbose);
-                         currentElement = listStart;
-                     }
-                     else
-                     swapAdjacentTaggedTransElements(currentElement->prev, currentElement, verbose);
-              }
-              
-              upperBound = upperBound->next;
-       }
-       
-       if(verbose) printf("gnomeSortTaggedTransList: Exiting\n");
-   
-   return(findFirstTaggedElement(currentElement, verbose));    
-       
+    while (upperBound != NULL)
+    {
+        currentElement = upperBound;
+
+        while (currentElement->prev != NULL && !cmpTransDates(currentElement->prev->trans, currentElement->trans, verbose))
+        {
+
+            if (currentElement->prev->prev == NULL)
+            {
+                listStart = currentElement;
+                swapAdjacentTaggedTransElements(currentElement->prev, currentElement, verbose);
+                currentElement = listStart;
+            }
+            else
+                swapAdjacentTaggedTransElements(currentElement->prev, currentElement, verbose);
+        }
+
+        upperBound = upperBound->next;
+    }
+
+    if (verbose)
+        printf("gnomeSortTaggedTransList: Exiting\n");
+
+    return (findFirstTaggedElement(currentElement, verbose));
 }
-
-
 
 // Swaps trans1 and trans2. Returns 1 on succses and 0 if elements are NULL or equal
 int swapTaggedTransElements(struct taggedTransLList *trans1, struct taggedTransLList *trans2, int verbose)
 {
     struct taggedTransLList *innerPrev, *innerNext;
-    
-    if( trans1 == NULL || trans2 == NULL || trans1 == trans2 )
-        return(0);
-        
+
+    if (trans1 == NULL || trans2 == NULL || trans1 == trans2)
+        return (0);
+
     //printf("Swapping tagged %s and %s\n", trans1->trans->description, trans2->trans->description);
-    
+
     // Setting outer relations
-    if( trans1->prev != NULL )
+    if (trans1->prev != NULL)
         trans1->prev->next = trans2;
-    if( trans1->next != NULL )
+    if (trans1->next != NULL)
         trans1->next->prev = trans2;
-        
-    if( trans2->prev != NULL )
+
+    if (trans2->prev != NULL)
         trans2->prev->next = trans1;
-    if( trans2->next != NULL )
+    if (trans2->next != NULL)
         trans2->next->prev = trans1;
-        
+
     innerPrev = trans1->prev;
     innerNext = trans1->next;
-    
+
     trans1->next = trans2->next;
     trans1->prev = trans2->prev;
-    
+
     trans2->next = innerNext;
     trans2->prev = innerPrev;
-    
-    return(1);
-        
-    
+
+    return (1);
 }
 
 // Swaps adjacent trans1 and trans2. Returns 1 on succses and 0 if elements are NULL or equal or not adjacent
 int swapAdjacentTaggedTransElements(struct taggedTransLList *trans1, struct taggedTransLList *trans2, int verbose)
 {
     struct taggedTransLList *outerPrev, *outerNext, *tmp;
-    
+
     // Return zero if error
-    if( trans1 == NULL || trans2 == NULL || trans1 == trans2 || !( trans1->next == trans2 || trans1->prev == trans2 ) )
-        return(0);
-        
-        //printf("Swapping adjacent tagged %s and %s\n", trans1->trans->description, trans2->trans->description);
-    
-    if( trans1->next == trans2 )
-    {        
-        // Swapping external relations        
-        if( trans1->prev != NULL )
-         trans1->prev->next = trans2;
-        if( trans2->next != NULL )
-         trans2->next->prev = trans1;
-                
+    if (trans1 == NULL || trans2 == NULL || trans1 == trans2 || !(trans1->next == trans2 || trans1->prev == trans2))
+        return (0);
+
+    //printf("Swapping adjacent tagged %s and %s\n", trans1->trans->description, trans2->trans->description);
+
+    if (trans1->next == trans2)
+    {
+        // Swapping external relations
+        if (trans1->prev != NULL)
+            trans1->prev->next = trans2;
+        if (trans2->next != NULL)
+            trans2->next->prev = trans1;
+
         // Swapping internal relations
         tmp = trans1->prev;
         trans1->prev = trans2;
         trans2->prev = tmp;
-        
+
         tmp = trans2->next;
         trans2->next = trans1;
         trans1->next = tmp;
-        
     }
-    else if( trans2->next == trans1 )
+    else if (trans2->next == trans1)
     {
-         
-         //Swapping extrenal relations
-         trans2->prev->next = trans1;
-         trans1->next->prev = trans2;
-                  
-         // Swapping internal relations
-         tmp = trans2->prev;
-         trans2->prev = trans1;
-         trans1->prev = tmp;
-         
-         tmp = trans1->next;
-         trans1->next = trans2;
-         trans2->next = tmp;
 
+        //Swapping extrenal relations
+        trans2->prev->next = trans1;
+        trans1->next->prev = trans2;
+
+        // Swapping internal relations
+        tmp = trans2->prev;
+        trans2->prev = trans1;
+        trans1->prev = tmp;
+
+        tmp = trans1->next;
+        trans1->next = trans2;
+        trans2->next = tmp;
     }
-    
-    return(1);
+
+    return (1);
 }
 
 // Returns pointer to first element in linked list
 struct taggedTransLList *findFirstTaggedElement(struct taggedTransLList *inElement, int verbose)
 {
-       while(inElement->prev != NULL)
-       inElement = inElement->prev;
-       
-       return(inElement);
+    while (inElement->prev != NULL)
+        inElement = inElement->prev;
+
+    return (inElement);
 }
 
 struct taggedTransLList *findLastTaggedElement(struct taggedTransLList *inElement, int verbose)
 {
-       while(inElement->next != NULL)
-       inElement = inElement->next;
-       
-       return(inElement);
+    while (inElement->next != NULL)
+        inElement = inElement->next;
+
+    return (inElement);
 }
 
 // Writes a table into file "fileName" or file pointer fp (cannot take both!), returns fp or -1 on error or NULL on closed file
 // -If "fileName": open new file and write a line.
 // -If fp: append fp with line of values.
 // -If close, close fp
-FILE *writeCalcMonthTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num, float argListOfValues[] )
+FILE *writeCalcMonthTabSeparatedTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num, float argListOfValues[])
 {
-    
+
     int x;
-    float tmpValue=0;
-    
+    float tmpValue = 0;
+
     // The six ifs below are to figure out whether the first to arguments (*fileName, *fp) are correctly done and what do to in the different settings
-    if( fileName != NULL && fp != NULL )
+    if (fileName != NULL && fp != NULL)
     {
-        if(verbose) printf("writeCalcMonthTable: Cannot take both fileName and fp!\n");
-        return(-1);
+        if (verbose)
+            printf("writeCalcMonthTabSeparatedTable: Cannot take both fileName and fp!\n");
+        return (-1);
     }
-    else if( fileName == NULL && fp == NULL )
+    else if (fileName == NULL && fp == NULL)
     {
-         if(verbose) printf("writeCalcMonthTable: Need either fileName or fp!\n");
-         printf("month %d year %d\n", month, year);
-         return(-1);
+        if (verbose)
+            printf("writeCalcMonthTabSeparatedTable: Need either fileName or fp!\n");
+        printf("month %d year %d\n", month, year);
+        return (-1);
     }
-    else if( fileName != NULL )
+    else if (fileName != NULL)
     {
-        if( (fp=fopen(fileName, "wt")) == NULL )
+        if ((fp = fopen(fileName, "wt")) == NULL)
         {
             perror("Error opening file");
-            return(-1);
+            return (-1);
         }
-        if(verbose) printf("writeCalcMonthTable: Creating file %s\n", fileName);
+        if (verbose)
+            printf("writeCalcMonthTabSeparatedTable: Creating file %s\n", fileName);
     }
-    else if( fp != NULL && close )
+    else if (fp != NULL && close)
     {
-         if(verbose) printf("writeCalcMonthTable: Closing file\n");
-         fclose(fp);
-         return(NULL);
+        if (verbose)
+            printf("writeCalcMonthTabSeparatedTable: Closing file\n");
+        fclose(fp);
+        return (NULL);
     }
-    else if( fp != NULL && !close )
+    else if (fp != NULL && !close)
     {
-         if(verbose) printf("writeCalcMonthTable: Appending already open file\n");
-         fseek(fp, 0, SEEK_END); // Go to end of file
+        if (verbose)
+            printf("writeCalcMonthTabSeparatedTable: Appending already open file\n");
+        fseek(fp, 0, SEEK_END); // Go to end of file
     }
     else
-    return(-1);
-    
-    
+        return (-1);
+
     // Write date
     fprintf(fp, "%d-%d", month, year);
-    if(verbose) printf("writeCalcMonthTable: %d-%d", month, year);
-    
-    for( x = 0; x<num; x++ )
-    {// float calcMonthSumOfTag(char month, int year, struct tagLList *tag, int verbose);
+    if (verbose)
+        printf("writeCalcMonthTabSeparatedTable: %d-%d", month, year);
 
-         tmpValue = argListOfValues[x]; // Retrieve next argument 
+    for (x = 0; x < num; x++)
+    { // float calcMonthSumOfTag(char month, int year, struct tagLList *tag, int verbose);
 
-         fprintf(fp, "\t%.2f", tmpValue);
-         if(verbose) printf("\t%.2f", tmpValue);
+        tmpValue = argListOfValues[x]; // Retrieve next argument
+
+        fprintf(fp, "\t%.2f", tmpValue);
+        if (verbose)
+            printf("\t%.2f", tmpValue);
     }
 
-    // Put newline in file    
+    // Put newline in file
     fprintf(fp, "\n");
-    if(verbose) printf("\n");
-    
-    
+    if (verbose)
+        printf("\n");
 
-return(fp);
+    return (fp);
 }
 
+// Writes a table into html file "fileName" or file pointer fp (cannot take both!), returns fp or -1 on error or NULL on closed file
+// -If "fileName": open new file and write a line.
+// -If fp: append fp with line of values.
+// -If close, close fp
+FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num, float argListOfValues[])
+{
+
+    int x;
+    float tmpValue = 0;
+
+    // The six ifs below are to figure out whether the first to arguments (*fileName, *fp) are correctly done and what do to in the different settings
+    if (fileName != NULL && fp != NULL)
+    {
+        if (verbose)
+            printf("writeCalcMonthHtmlCssTable: Cannot take both fileName and fp!\n");
+        return (-1);
+    }
+    else if (fileName == NULL && fp == NULL)
+    {
+        if (verbose)
+            printf("writeCalcMonthHtmlCssTable: Need either fileName or fp!\n");
+        printf("month %d year %d\n", month, year);
+        return (-1);
+    }
+    else if (fileName != NULL)
+    {
+        if ((fp = fopen(fileName, "wt")) == NULL)
+        {
+            perror("Error opening file");
+            return (-1);
+        }
+
+        initHtmlTableFile(fp);
+
+        if (verbose)
+            printf("writeCalcMonthHtmlCssTable: Creating file %s\n", fileName);
+    }
+    else if (fp != NULL && close)
+    {
+        endHtmlTableFile(fp);
+        
+        if (verbose)
+            printf("writeCalcMonthHtmlCssTable: Closing file\n");
+        fclose(fp);
+        return (NULL);
+    }
+    else if (fp != NULL && !close)
+    {
+        if (verbose)
+            printf("writeCalcMonthHtmlCssTable: Appending already open file\n");
+        fseek(fp, 0, SEEK_END); // Go to end of file
+    }
+    else
+        return (-1);
+
+    // Write date
+    writeLabelToHtmlTableFile(fp, month, year);
+
+    if (verbose)
+        printf("writeCalcMonthHtmlCssTable: %d-%d", month, year);
+
+    for (x = 0; x < num; x++)
+    {
+
+        tmpValue = argListOfValues[x]; // Retrieve next argument
+
+        writeValueToHtmlTableFile(fp, tmpValue);
+
+        if (verbose)
+            printf("\t%.2f", tmpValue);
+    }
+
+    if (verbose)
+        printf("\n");
+
+    return (fp);
+}
 
 // Writes a file "fileName" with all monthly sums of tag "tagName"
 int writeMonthSumOfTag(char *fileName, char *tagName, struct tagLList *tagList, int verbose)
 {
-    
+
     char startMonth, endMonth, currentMonth;
     int startYear, endYear, currentYear;
     FILE *fp;
     float tmpValue[1];
-    
+
     struct taggedTransLList *taggedList;
-    
 
     // Find correct tag
     tagList = findTag(tagName, tagList);
-    
+
     taggedList = tagList->transList;
-    
+
     // Extract first month and year
     taggedList = findFirstTaggedElement(taggedList, verbose);
-    
+
     startMonth = taggedList->trans->month;
-    startYear  = taggedList->trans->year;
-    
+    startYear = taggedList->trans->year;
+
     // Extract last month and year
     taggedList = findLastTaggedElement(taggedList, verbose);
-    
+
     endMonth = taggedList->trans->month;
-    endYear  = taggedList->trans->year;
-    
+    endYear = taggedList->trans->year;
+
     // Prepare loop
     currentYear = startYear;
     currentMonth = startMonth;
-    
-    
-    while(  (currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear) )
+
+    while ((currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear))
     {
-            tmpValue[0] = calcMonthSumOfTag(currentMonth, currentYear, tagList, verbose);
-            
-           // If first call; open new file
-           if(currentMonth == startMonth && currentYear == startYear)
-           fp = writeCalcMonthTable(fileName, NULL, 0, verbose, currentMonth, currentYear, 1, tmpValue);
-           // Otherwise, append fp
-           else
-           fp = writeCalcMonthTable(NULL, fp, 0, verbose, currentMonth, currentYear, 1, tmpValue);
-           
-           // Date counter
-           currentMonth++;
-           if( currentMonth > 12 )
-           {
-               currentMonth = 1;
-               currentYear++;
-           }
+        tmpValue[0] = calcMonthSumOfTag(currentMonth, currentYear, tagList, verbose);
+
+        // If first call; open new file
+        if (currentMonth == startMonth && currentYear == startYear)
+            fp = writeCalcMonthTabSeparatedTable(fileName, NULL, 0, verbose, currentMonth, currentYear, 1, tmpValue);
+        // Otherwise, append fp
+        else
+            fp = writeCalcMonthTabSeparatedTable(NULL, fp, 0, verbose, currentMonth, currentYear, 1, tmpValue);
+
+        // Date counter
+        currentMonth++;
+        if (currentMonth > 12)
+        {
+            currentMonth = 1;
+            currentYear++;
+        }
     }
-    
+
     // Close file
-    writeCalcMonthTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL);
-    
-    
-    return(0);
+    writeCalcMonthTabSeparatedTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL);
+
+    return (0);
 }
 
 // Writes a file "fileName" with all monthly cost sums of all transactions
@@ -638,134 +719,149 @@ int writeMonthSumOfTrans(char *fileName, struct transLList *transList, int verbo
     int startYear, endYear, currentYear;
     FILE *fp;
     float tmpValue[1];
-    
 
     // Extract last month and year
     transList = findLastElement(transList, verbose);
-    
+
     endMonth = transList->month;
-    endYear  = transList->year;
-        
+    endYear = transList->year;
+
     // Extract first month and year
     transList = findFirstElement(transList, verbose);
-    
+
     startMonth = transList->month;
-    startYear  = transList->year;
-    
+    startYear = transList->year;
+
     // Prepare loop
     currentYear = startYear;
     currentMonth = startMonth;
-    
 
-    while(  (currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear) )
+    while ((currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear))
     {
-            tmpValue[0] = calcMonthSumOfTrans(currentMonth, currentYear, transList, verbose);
-            
-           // If first call; open new file
-           if(currentMonth == startMonth && currentYear == startYear)
-           fp = writeCalcMonthTable(fileName, NULL, 0, verbose, currentMonth, currentYear, 1, tmpValue);
-           // Otherwise, append fp
-           else
-           fp = writeCalcMonthTable(NULL, fp, 0, verbose, currentMonth, currentYear, 1, tmpValue);
-           
-           // Date counter
-           currentMonth++;
-           if( currentMonth > 12 )
-           {
-               currentMonth = 1;
-               currentYear++;
-           }
-    }   
-    
+        tmpValue[0] = calcMonthSumOfTrans(currentMonth, currentYear, transList, verbose);
+
+        // If first call; open new file
+        if (currentMonth == startMonth && currentYear == startYear)
+            fp = writeCalcMonthTabSeparatedTable(fileName, NULL, 0, verbose, currentMonth, currentYear, 1, tmpValue);
+        // Otherwise, append fp
+        else
+            fp = writeCalcMonthTabSeparatedTable(NULL, fp, 0, verbose, currentMonth, currentYear, 1, tmpValue);
+
+        // Date counter
+        currentMonth++;
+        if (currentMonth > 12)
+        {
+            currentMonth = 1;
+            currentYear++;
+        }
+    }
+
     // Close file
-    writeCalcMonthTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL);
-    
-    
-    return(0);    
+    writeCalcMonthTabSeparatedTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL);
+
+    return (0);
 }
 
-// Writes a file "fileName" with monthly ratios of all tags to total sum of costs. 
+// Writes a file "fileName" with monthly ratios of all tags to total sum of costs.
 int writeMonthSumOfTags(char *fileName, struct transLList *transList, struct tagLList *tagList, int verbose)
 {
     struct taggedTransLList *taggedList;
     struct tagLList *tagListStart;
     char startMonth, endMonth, currentMonth;
-    int startYear, endYear, currentYear, n=0, num = tagListLen(tagList,verbose);
+    int startYear, endYear, currentYear, n = 0, num = tagListLen(tagList, verbose);
     FILE *fp;
     float tmpTagValue[num];
-    
-    if(verbose) printf("writeMonthSumOfTags: Entering\n");
+
+    if (verbose)
+        printf("writeMonthSumOfTags: Entering\n");
 
     // Go to first tag
     tagList = findFirstTag(tagList);
     tagListStart = tagList;
-    
+
     taggedList = tagList->transList;
 
     // Extract last month and year
     transList = findLastElement(transList, verbose);
-    
+
     endMonth = transList->month;
-    endYear  = transList->year;
-        
+    endYear = transList->year;
+
     // Extract first month and year
     transList = findFirstElement(transList, verbose);
-    
+
     startMonth = transList->month;
-    startYear  = transList->year;
-    
+    startYear = transList->year;
+
     // Prepare loop
     currentYear = startYear;
-    currentMonth = startMonth;    
+    currentMonth = startMonth;
 
-    while(  (currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear) )
+    while ((currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear))
     {
-            // Reset counters
-            tagList = tagListStart;
-            n=0;
-            
-            // Calculate cost ratios for every tag
-            while(tagList != NULL)
-            {
-                     tmpTagValue[n] = calcMonthSumOfTag(currentMonth, currentYear, tagList, verbose);
-                     n++;
-                     tagList = tagList->next;
-            }
-                     
-                     
-                     
-           // If first call; open new file
-           if(currentMonth == startMonth && currentYear == startYear)
-           fp = writeCalcMonthTable(fileName, NULL, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
-           // Otherwise, append fp
-           else
-           fp = writeCalcMonthTable(NULL, fp, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
-           
-           // Date counter
-           currentMonth++;
-           if( currentMonth > 12 )
-           {
-               currentMonth = 1;
-               currentYear++;
-           }
-    }   
-    
+        // Reset counters
+        tagList = tagListStart;
+        n = 0;
+
+        // Calculate cost ratios for every tag
+        while (tagList != NULL)
+        {
+            tmpTagValue[n] = calcMonthSumOfTag(currentMonth, currentYear, tagList, verbose);
+            n++;
+            tagList = tagList->next;
+        }
+
+        if (strcmp(getFileExtension(fileName), "txt") == 0)
+        {
+            // If first call; open new file
+            if (currentMonth == startMonth && currentYear == startYear)
+                fp = writeCalcMonthTabSeparatedTable(fileName, NULL, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
+            // Otherwise, append fp
+            else
+                fp = writeCalcMonthTabSeparatedTable(NULL, fp, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
+        }
+        else if(strcmp(getFileExtension(fileName), "html") == 0)
+        {
+            // If first call; open new file
+            if (currentMonth == startMonth && currentYear == startYear)
+                fp = writeCalcMonthHtmlCssTable(fileName, NULL, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
+            // Otherwise, append fp
+            else
+                fp = writeCalcMonthHtmlCssTable(NULL, fp, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
+        }
+        // Date counter
+        currentMonth++;
+        if (currentMonth > 12)
+        {
+            currentMonth = 1;
+            currentYear++;
+        }
+    }
+
     // Close file
-    if( writeCalcMonthTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL) == NULL )
-        printf("writeMonthSumOfTags: Successfully wrote %s\n", fileName);
-    
-    if(verbose) printf("writeMonthSumOfTags: Exiting\n");
+    if (strcmp(getFileExtension(fileName), "txt") == 0)
+    {
+        if (writeCalcMonthTabSeparatedTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL) == NULL)
+            printf("writeMonthSumOfTags: Successfully wrote %s\n", fileName);
+    }
+    else if (strcmp(getFileExtension(fileName), "html") == 0)
+    {
+        if (writeCalcMonthHtmlCssTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL) == NULL)
+            printf("writeMonthSumOfTags: Successfully wrote %s\n", fileName);
+    }
+
+    if (verbose)
+        printf("writeMonthSumOfTags: Exiting\n");
 
     return 1;
 }
 
-
 struct tagLList *findFirstTag(struct tagLList *tagList)
 {
-       while(tagList->prev != NULL)
-       tagList = tagList->prev;
-       
-       return(tagList);
+    while (tagList->prev != NULL)
+        tagList = tagList->prev;
+
+    return (tagList);
 }
 
 int tagListLen(struct tagLList *tagList, int verbose)
@@ -773,36 +869,34 @@ int tagListLen(struct tagLList *tagList, int verbose)
     int c = 0;
 
     tagList = findFirstTag(tagList);
-    
-    while(tagList != NULL)
+
+    while (tagList != NULL)
     {
-          tagList = tagList->next;
-          c++;     
+        tagList = tagList->next;
+        c++;
     }
 
-    
-    return(c);
+    return (c);
 }
 
 struct tagLList *findLastTag(struct tagLList *tagList)
 {
-       while(tagList->next != NULL)
-       tagList = tagList->next;
+    while (tagList->next != NULL)
+        tagList = tagList->next;
 
-       
-       return(tagList);
+    return (tagList);
 }
 
 // Returns pointer to last element in keyword list
 struct keyWord *findLastKeyword(struct keyWord *inKeyword)
 {
-	if(inKeyword == NULL)
-		return(NULL);
-		
-	while(inKeyword->next != NULL)
-		inKeyword = inKeyword->next;
-		
-		return(inKeyword);
+    if (inKeyword == NULL)
+        return (NULL);
+
+    while (inKeyword->next != NULL)
+        inKeyword = inKeyword->next;
+
+    return (inKeyword);
 }
 
 // Frees a list of tragged transactions (DOES NOT FREE THE TRANSACTIONS THEMSELVES. ONLY THE TAGGED LIST) Returns # of freed elements
@@ -810,18 +904,43 @@ int freeTaggedTransList(struct taggedTransLList *taggedTrans, int verbose)
 {
     struct taggedTransLList *current;
     int count = 0;
-    
-    if(verbose) printf("freeTaggedTransList: Entering\n");
-    
-    while(taggedTrans != NULL)
+
+    if (verbose)
+        printf("freeTaggedTransList: Entering\n");
+
+    while (taggedTrans != NULL)
     {
-                      current = taggedTrans;
-                      taggedTrans = taggedTrans->next;
-                      free(current);
-                      count++;
+        current = taggedTrans;
+        taggedTrans = taggedTrans->next;
+        free(current);
+        count++;
     }
-    
-    if(verbose) printf("freeTaggedTransList: Freed %d tagged elements. Exiting\n", count);
-    
-    return(count);
+
+    if (verbose)
+        printf("freeTaggedTransList: Freed %d tagged elements. Exiting\n", count);
+
+    return (count);
+}
+
+/* Look here: http://geoffgraham.me/creating-a-responsive-css-bar-chart/ */
+void initHtmlTableFile(FILE *fp)
+{
+    fprintf(fp, "<!DOCTYPE HTML><html><head><title>My transactions by category</title>");
+    fprintf(fp, "<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\" />");
+    fprintf(fp, "</head><body><ul><li>");
+}
+
+void endHtmlTableFile(FILE *fp)
+{
+    fprintf(fp, "</ul></body></html>");
+}
+
+void writeLabelToHtmlTableFile(FILE *fp, int month, int year)
+{
+    fprintf(fp, "<div class=\"label\">%d - %d</div>", year, month);
+}
+
+void writeValueToHtmlTableFile(FILE *fp, float value)
+{
+    fprintf(fp, "<li>%f.2</li>", value);
 }
