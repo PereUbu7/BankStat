@@ -6,6 +6,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include "tags.h"
+#include "tagNav.h"
+#include "transGen.h"
+#include "stringUtils.h"
+#include "utils.h"
 
 // Creates a linked list tree from file. Returns pointer to first tag
 struct tagLList *readTagToLList(FILE *fp, int verbose);
@@ -50,6 +54,8 @@ struct taggedTransLList *findFirstTaggedElement(struct taggedTransLList *inEleme
 // -If "fileName": open new file and write a line.
 // -If fp: append fp with line of values.
 FILE *writeCalcMonthTabSeparatedTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num,  float argListOfValues[]);
+FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num, float argListOfValues[], char *argListOfLabels[]);
+
 
 // Writes a file "fileName" with all monthly cost sums of tag "tagName"
 int writeMonthSumOfTag(char *fileName, char *tagName, struct tagLList *tagList, int verbose);
@@ -69,12 +75,37 @@ struct keyWord *findLastKeyword(struct keyWord *inKeyword);
 
 int tagListLen(struct tagLList *tagList, int verbose);
 
-void initHtmlTableFile(FILE *fp);
+char **getTagLabels(struct tagLList *tagList);
+
+void writeCalcMonthHtmlFile(char *fileName, int startYear, int endYear, int startMonth, int endMonth, struct tagLList *tagList, int verbose);
 
 void endHtmlTableFile(FILE *fp);
 
 void writeLabelToHtmlTableFile(FILE *fp, int month, int year);
 
 void writeValueToHtmlTableFile(FILE *fp, float value);
+
+void initHtmlTableFile(FILE *fp, int chartWidth, int chartHeight, int barWidth, int ticksWidth, int gridSegmentWidth, float legendWidth);
+
+void writeLegendPositionToHtmlTableFile(FILE *fp, char *legendName, float legendPosition);
+
+void writeCategoryPositionToHtmlTableFile(FILE *fp, char *categoryId, int categoryPosition);
+
+void writeLabelPositionToHtmlTableFile(FILE *fp, char *labelClass, int labelPosition, char *labelColor);
+
+void writeEndStylingStartDataToHtmlTableFile(FILE *fp);
+
+void writeLegendNameToHtmlTableFile(FILE *fp, char *labelClass, char *labelName);
+
+void writeEndLegendNamesToHtmlTableFile(FILE *fp);
+
+void writeCategoryDataToHtmlTableFile(FILE *fp, char *categoryId, char *categoryName, float dataList[], int dataPixelList[], struct tagLList *tag);
+
+void writeEndCategoryDataToHtmlTableFile(FILE *fp);
+
+void writeTicksToHtmlTableFile(FILE *fp, int tickHeight, float tickValue);
+
+void endHtmlTableFile(FILE *fp);
+
 
 #endif

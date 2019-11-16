@@ -1,8 +1,4 @@
-#include "tags.h"
 #include "tagGen.h"
-#include "tagNav.h"
-#include "transGen.h"
-#include "stringUtils.h"
 
 //--------------------------- Functions -----------------------------
 
@@ -93,7 +89,7 @@ struct tagLList *readTagToLList(FILE *fp, int verbose)
                     break;
                 }
                 // else, if not a comment or newline; suspect keyWord
-                else if (tmpLine[0] != '%' && tmpLine[0] != '\n')
+                else if (tmpLine[0] != '%' && tmpLine[0] != '\n' && tmpLine[0] != '\r')
                 {
                     // Remove the newline caracter at the end of tmpLine
                     replaceCharacterWithStringEnd(tmpLine, '\n');
@@ -580,7 +576,7 @@ FILE *writeCalcMonthTabSeparatedTable(char *fileName, FILE *fp, int close, int v
 // -If "fileName": open new file and write a line.
 // -If fp: append fp with line of values.
 // -If close, close fp
-FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num, float argListOfValues[])
+FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbose, int month, int year, int num, float argListOfValues[], char *argListOfLabels[])
 {
 
     int x;
@@ -608,7 +604,13 @@ FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbos
             return (-1);
         }
 
-        initHtmlTableFile(fp);
+        //initHtmlTableFile(fp);
+        writeLegendPositionToHtmlTableFile(fp, "Test", 1.4);
+        writeCategoryPositionToHtmlTableFile(fp, "char *categoryId", 200);
+        //writeLabelPositionToHtmlTableFile(fp, "Tjobla", 600);
+        writeEndStylingStartDataToHtmlTableFile(fp);
+        //writeLegendNameToHtmlTableFile(fp, "Tjobla2");
+        writeEndLegendNamesToHtmlTableFile(fp);
 
         if (verbose)
             printf("writeCalcMonthHtmlCssTable: Creating file %s\n", fileName);
@@ -632,10 +634,12 @@ FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbos
         return (-1);
 
     // Write date
-    writeLabelToHtmlTableFile(fp, month, year);
+    writeDateToHtmlTableFile(fp, month, year);
 
     if (verbose)
         printf("writeCalcMonthHtmlCssTable: %d-%d", month, year);
+    
+    writeLabelsToHtmlTableFile(fp, num, argListOfLabels);
 
     for (x = 0; x < num; x++)
     {
@@ -643,10 +647,16 @@ FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbos
         tmpValue = argListOfValues[x]; // Retrieve next argument
 
         writeValueToHtmlTableFile(fp, tmpValue);
+        //writeCategoryDataToHtmlTableFile(fp, argListOfLabels[x], argListOfValues, (int)(argListOfValues[x]/100), NULL);
 
         if (verbose)
             printf("\t%.2f", tmpValue);
     }
+
+    writeEndCategoryDataToHtmlTableFile(fp);
+
+    writeTicksToHtmlTableFile(fp, 20, 462.3);
+    endHtmlTableFile(fp);
 
     if (verbose)
         printf("\n");
@@ -772,6 +782,9 @@ int writeMonthSumOfTags(char *fileName, struct transLList *transList, struct tag
     FILE *fp;
     float tmpTagValue[num];
 
+    /* tagLables must be freed! */
+    char **tagLabels = getTagLabels(tagList);
+
     if (verbose)
         printf("writeMonthSumOfTags: Entering\n");
 
@@ -797,6 +810,12 @@ int writeMonthSumOfTags(char *fileName, struct transLList *transList, struct tag
     currentYear = startYear;
     currentMonth = startMonth;
 
+    if(strcmp(getFileExtension(fileName), "html") == 0)
+    {
+        writeCalcMonthHtmlFile(fileName, startYear, endYear, startMonth, endMonth, tagList, verbose);
+        return 0;
+    }
+
     while ((currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear))
     {
         // Reset counters
@@ -811,24 +830,13 @@ int writeMonthSumOfTags(char *fileName, struct transLList *transList, struct tag
             tagList = tagList->next;
         }
 
-        if (strcmp(getFileExtension(fileName), "txt") == 0)
-        {
-            // If first call; open new file
-            if (currentMonth == startMonth && currentYear == startYear)
-                fp = writeCalcMonthTabSeparatedTable(fileName, NULL, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
-            // Otherwise, append fp
-            else
-                fp = writeCalcMonthTabSeparatedTable(NULL, fp, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
-        }
-        else if(strcmp(getFileExtension(fileName), "html") == 0)
-        {
-            // If first call; open new file
-            if (currentMonth == startMonth && currentYear == startYear)
-                fp = writeCalcMonthHtmlCssTable(fileName, NULL, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
-            // Otherwise, append fp
-            else
-                fp = writeCalcMonthHtmlCssTable(NULL, fp, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
-        }
+        // If first call; open new file
+        if (currentMonth == startMonth && currentYear == startYear)
+            fp = writeCalcMonthTabSeparatedTable(fileName, NULL, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
+        // Otherwise, append fp
+        else
+            fp = writeCalcMonthTabSeparatedTable(NULL, fp, 0, verbose, currentMonth, currentYear, num, tmpTagValue);
+
         // Date counter
         currentMonth++;
         if (currentMonth > 12)
@@ -839,19 +847,16 @@ int writeMonthSumOfTags(char *fileName, struct transLList *transList, struct tag
     }
 
     // Close file
-    if (strcmp(getFileExtension(fileName), "txt") == 0)
-    {
-        if (writeCalcMonthTabSeparatedTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL) == NULL)
-            printf("writeMonthSumOfTags: Successfully wrote %s\n", fileName);
-    }
-    else if (strcmp(getFileExtension(fileName), "html") == 0)
-    {
-        if (writeCalcMonthHtmlCssTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL) == NULL)
-            printf("writeMonthSumOfTags: Successfully wrote %s\n", fileName);
-    }
+    if (writeCalcMonthTabSeparatedTable(NULL, fp, 1, verbose, currentMonth, currentYear, 0, NULL) == NULL)
+        printf("writeMonthSumOfTags: Successfully wrote %s\n", fileName);
 
     if (verbose)
         printf("writeMonthSumOfTags: Exiting\n");
+
+    /* Freeing tag labels list */
+    for(int i = 0; i < num; i++)
+        free(tagLabels[i]);
+    free(tagLabels);
 
     return 1;
 }
@@ -922,25 +927,298 @@ int freeTaggedTransList(struct taggedTransLList *taggedTrans, int verbose)
     return (count);
 }
 
-/* Look here: http://geoffgraham.me/creating-a-responsive-css-bar-chart/ */
-void initHtmlTableFile(FILE *fp)
+void writeCalcMonthHtmlFile(char *fileName, int startYear, int endYear, int startMonth, int endMonth, struct tagLList *tagList, int verbose)
 {
-    fprintf(fp, "<!DOCTYPE HTML><html><head><title>My transactions by category</title>");
-    fprintf(fp, "<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\" />");
-    fprintf(fp, "</head><body><ul><li>");
+    static int categoryWidth = 300;
+    static int chartHeight = 500;
+    static int barMargin = 5;
+    static int categoryMargin = 30;
+
+    int tagIndex = 0, monthIndex = 0;
+    int currentYear = startYear;
+    int currentMonth = startMonth;
+    int numberOfTags = getTagCount(tagList, verbose);
+    int numberOfMonths = (endYear-startYear)*12+(endMonth-startMonth);
+    float **tagValues = malloc( sizeof(float*)*numberOfMonths );
+    float maxTagValue;
+    int *tagPixelsValues = malloc( sizeof(int)*numberOfTags );
+
+    int chartWidth = (int)categoryWidth * numberOfMonths;
+    int barWidth = (int)(categoryWidth - categoryMargin) / numberOfTags - barMargin;
+    int ticksWidth = (int)categoryWidth * numberOfMonths;
+    int gridSegmentWidth = categoryWidth;
+    float legendWidth = 7.5;
+
+    int categoryPosition = 0, labelPosition;
+    float legendPosition, legendDistance = 2.5;
+
+    char tempTagName[50];
+
+    struct tagLList *tag, *tagListStart = findFirstTag(tagList);
+    FILE *fp;
+
+    /* Open file */
+    if ((fp = fopen(fileName, "wt")) == NULL)
+    {
+        perror("Error opening file");
+        return;
+    }
+
+    initHtmlTableFile(fp, chartWidth, chartHeight, barWidth, ticksWidth, gridSegmentWidth, legendWidth);
+
+    tag = tagListStart;
+    legendPosition = 0;
+    labelPosition = barMargin;
+    while(tag != NULL)
+    {
+        char labelColor[7];
+
+        rgb color = getRandomRgbColor(1, 1);
+
+        sprintf(labelColor, "%02X%02X%02X", (int)(255*color.r), (int)(255*color.g), (int)(255*color.g));
+
+        strReplace(tempTagName, tag->name, ' ', '_');
+        writeLegendPositionToHtmlTableFile(fp, tempTagName, legendPosition);
+        writeLabelPositionToHtmlTableFile(fp, tempTagName, labelPosition, labelColor);
+        tag = tag->next;
+        legendPosition += legendDistance;
+        labelPosition += barWidth + barMargin;
+    }
+
+    maxTagValue = 0;
+
+    /* Iterate through all months */
+    while ((currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear))
+    {
+        char categoryId[50];
+        sprintf(categoryId, "%d_-_%d", currentMonth, currentYear);
+        insertCharacterAtBeginningOfString(categoryId, categoryId, 's');
+        writeCategoryPositionToHtmlTableFile(fp, categoryId, categoryPosition);
+        categoryPosition += categoryWidth;
+
+        // Reset counters
+        tag = tagListStart;
+        tagIndex = 0;
+        tagValues[monthIndex] = malloc(sizeof(float)*numberOfTags);
+
+        // Calculate cost ratios for every tag
+        while (tag != NULL)
+        {
+            tagValues[monthIndex][tagIndex] = -calcMonthSumOfTag(currentMonth, currentYear, tag, verbose);
+
+            /* Find biggest value */
+            if(tagValues[monthIndex][tagIndex] > maxTagValue)
+                maxTagValue = tagValues[monthIndex][tagIndex];
+
+            tagIndex++;
+            tag = tag->next;
+        }
+
+        // Date counter
+        currentMonth++;
+        if (currentMonth > 12)
+        {
+            currentMonth = 1;
+            currentYear++;
+        }
+
+        monthIndex++;
+    }
+
+    writeEndStylingStartDataToHtmlTableFile(fp);
+
+    tag = tagListStart;
+    while (tag != NULL)
+    {
+        strReplace(tempTagName, tag->name, ' ', '_');
+        writeLegendNameToHtmlTableFile(fp, tempTagName, tag->name);
+        tag = tag->next;
+    }
+
+    writeEndLegendNamesToHtmlTableFile(fp);
+
+    monthIndex = 0;
+    currentYear = startYear;
+    currentMonth = startMonth;
+    while ((currentYear == endYear && currentMonth <= endMonth) || (currentYear < endYear))
+    {
+        char categoryName[50];
+        sprintf(categoryName, "%d - %d", currentMonth, currentYear);
+        strReplace(tempTagName, categoryName, ' ', '_');
+        insertCharacterAtBeginningOfString(tempTagName, tempTagName, 's');
+
+        /* Scale tag values into pixels */
+        for(int i = 0; i< numberOfTags; i++)
+            tagPixelsValues[i] = (int)chartHeight*tagValues[monthIndex][i]/maxTagValue;
+
+        writeCategoryDataToHtmlTableFile(fp, tempTagName, categoryName, tagValues[monthIndex], tagPixelsValues, tagListStart);
+
+        /* Free month */
+        free(tagValues[monthIndex]);
+
+        // Date counter
+        currentMonth++;
+        if (currentMonth > 12)
+        {
+            currentMonth = 1;
+            currentYear++;
+        }
+
+        monthIndex++;
+    }
+
+    free(tagValues);
+    free(tagPixelsValues);
+
+    writeEndCategoryDataToHtmlTableFile(fp);
+
+    // for(int i = 1; i < 5; i++)
+    // {
+    //     writeTicksToHtmlTableFile(fp, (int)chartHeight/4, i*maxTagValue/4);
+    // }
+
+    endHtmlTableFile(fp);
+}
+
+void initHtmlTableFile(FILE *fp, int chartWidth, int chartHeight, int barWidth, int ticksWidth, int gridSegmentWidth, float legendWidth)
+{
+    fprintf(fp, "<!DOCTYPE HTML><html><head><title>My transactions by category</title><style>body,html {height: 100%%;}");
+    fprintf(fp, "body {display: inline-block;justify-content: center;align-items: center;font-family: \"fira-sans-2\", Verdana, sans-serif;}");
+    fprintf(fp, "#q-graph {display: block;position: absolute;width: %dpx;height: %dpx;margin: 1.1em 0 0;padding: 0;background: transparent;font-size: 11px;}", chartWidth, chartHeight);
+    fprintf(fp, "#q-graph caption {caption-side: top;width: 100px; text-transform: uppercase;letter-spacing: .5px;position: fixed;z-index: 10;font-weight: bold;left: 50%%;}");
+    fprintf(fp, "#q-graph tr,#q-graph th,#q-graph td {position: absolute;bottom: 0;width: %dpx;", gridSegmentWidth);
+    fprintf(fp, "z-index: 2;margin: 0;padding: 0;text-align: center;}");
+    fprintf(fp, "#q-graph td {transition: all .3s ease;}");
+    fprintf(fp, "#q-graph td:hover {background-color: desaturate(#85144b, 100);	opacity: .9;color: white;}");
+    fprintf(fp, "#q-graph thead tr {position: fixed;right: -100px;top: 100px;bottom: auto;margin: -2.5em 0 0 5em;}");
+    fprintf(fp, "#q-graph thead th {position: aboslute; width: %fem;height: auto;padding: 0.5em 1em;}", legendWidth);
+    fprintf(fp, " #q-graph tbody tr {height: %dpx;	padding-top: 2px;border-right: 1px dotted #C4C4C4;color: #AAA;}", chartHeight);
+    fprintf(fp, "#q-graph tbody th {bottom: -1.75em;vertical-align: top;font-weight: normal;color: #333;}");
+    fprintf(fp, "#q-graph .bar {width: %dpx;border: 1px solid;border-bottom: none;color: #000;}", barWidth);
+    fprintf(fp, "#q-graph .bar p {position: relative; transform: rotate(-90deg); bottom: 25px; margin: 5px 0 0;padding: 0;opacity: .4;}");
+    fprintf(fp, "#ticks {position: fixed;left: 2px;width: %dpx;height: %dpx;z-index: 1;	margin: 1.1em 1.1em 0;font-size: 10px;font-family: \"fira-sans-2\", Verdana, sans-serif;}", ticksWidth, chartHeight);
+    fprintf(fp, "#ticks .tick {	position: relative;	border-bottom: 1px dotted #C4C4C4;width: %dpx;}", chartWidth);
+    fprintf(fp, "#ticks .tick p {position: absolute;left: -5em;	top: -0.8em;margin: 0 0 0 4em;}");
+}
+
+void writeLegendPositionToHtmlTableFile(FILE *fp, char *legendName, float legendPosition)
+{
+    fprintf(fp, " #q-graph thead th.%s {top: %fem;left: 0;line-height: 2;}", legendName, legendPosition);
+}
+
+void writeCategoryPositionToHtmlTableFile(FILE *fp, char *categoryId, int categoryPosition)
+{
+    fprintf(fp, "#q-graph #%s {left: %dpx;}", categoryId, categoryPosition);
+}
+
+void writeLabelPositionToHtmlTableFile(FILE *fp, char *labelClass, int labelPosition, char *labelColor)
+{
+    fprintf(fp, "#q-graph .%s {left: %dpx;background-color: #%s;border-color: transparent;}", labelClass, labelPosition, labelColor);
+}
+
+void writeEndStylingStartDataToHtmlTableFile(FILE *fp)
+{
+    fprintf(fp, "</style></head><body><table id=\"q-graph\"><caption>Title</caption><thead><tr>");
+}
+
+void writeLegendNameToHtmlTableFile(FILE *fp, char *labelClass, char *labelName)
+{
+    fprintf(fp, "<th class=\"%s\">%s</th>", labelClass, labelName);
+}
+
+void writeEndLegendNamesToHtmlTableFile(FILE *fp)
+{
+    fprintf(fp, "</tr></thead><tbody>");
+}
+
+void writeCategoryDataToHtmlTableFile(FILE *fp, char *categoryId, char *categoryName, float dataList[], int *dataPixelList, struct tagLList *tag)
+{
+    fprintf(fp, "<tr class=\"qtr\" id=\"%s\"><th scope=\"row\">%s</th>", categoryId, categoryName);
+
+    int i = 0;
+    char tempTagName[50];
+
+    while(tag != NULL)
+    {
+        strReplace(tempTagName, tag->name, ' ', '_');
+        fprintf(fp, "<td class=\"%s bar\"style=\"height: %dpx;\">", tempTagName, dataPixelList[i]);
+        fprintf(fp, "<p>%0.2f</p></td>", dataList[i]);
+
+        i++;
+        tag = tag->next;
+    }
+
+    fprintf(fp, "</tr>");
+}
+
+void writeEndCategoryDataToHtmlTableFile(FILE *fp)
+{
+    fprintf(fp, "</tbody></table><div id=\"ticks\">");
+}
+
+void writeTicksToHtmlTableFile(FILE *fp, int tickHeight, float tickValue)
+{
+    fprintf(fp, "<div class=\"tick\" style=\"height: %dpx;\">", tickHeight);
+    fprintf(fp, "<p>%f.0</p></div>", tickValue);
 }
 
 void endHtmlTableFile(FILE *fp)
 {
-    fprintf(fp, "</ul></body></html>");
+    fprintf(fp, "</div></body></html>");
 }
 
-void writeLabelToHtmlTableFile(FILE *fp, int month, int year)
+void writeDateToHtmlTableFile(FILE *fp, int month, int year)
 {
-    fprintf(fp, "<div class=\"label\">%d - %d</div>", year, month);
+    fprintf(fp, "<h1>%d - %d</h1>\n", year, month);
+}
+
+void writeLabelsToHtmlTableFile(FILE *fp, int num, char *label[])
+{
+    fprintf(fp, "<li>\n");
+
+    for(int i = 0; i < num; i++)
+        fprintf(fp, "\t<div class=\"label\">%s</div>\n", label[i]);
+
+    fprintf(fp, "</li>\n");
 }
 
 void writeValueToHtmlTableFile(FILE *fp, float value)
 {
-    fprintf(fp, "<li>%f.2</li>", value);
+    fprintf(fp, "<li class=\"teal\" style=\"height:95%%;\">\n<div class=\"percent\">%f.2</li>\n", -value);
+}
+
+char **getTagLabels(struct tagLList *tagList)
+{
+    struct tagLList *currentTag = tagList;
+    char **listOfTagLabels;
+
+    /* get longest tag string 
+       and count number of tags */
+    int longest = 0, numberOfTags = 0;
+
+    while(currentTag != NULL)
+    {
+        numberOfTags++;
+        int currentLength = strlen(currentTag->name);
+
+        if(currentLength > longest)
+            longest = currentLength;
+
+        currentTag = currentTag->next;
+    }
+
+    /* Allocate memory */
+    listOfTagLabels = malloc(numberOfTags*sizeof(char*));
+
+    /* Copy all tag labels into list */
+    currentTag = tagList;
+    
+    for(int i = 0; i < numberOfTags; i++)
+    {
+        listOfTagLabels[i] = malloc((longest+1)*sizeof(char*));
+        strcpy(listOfTagLabels[i], currentTag->name);
+        currentTag = currentTag->next;
+    }
+
+    return listOfTagLabels;
 }

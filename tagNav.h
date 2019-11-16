@@ -33,4 +33,7 @@ void printKeyWords(struct keyWord *keyWordList, int verbose);
 // Returns pointer to first element in linked list
 struct transLList *findFirstElement(struct transLList *inElement, int verbose);
 
+// Returns tag count after 'tag' (including 'tag')
+int getTagCount(struct tagLList *tag, int verbose);
+
 #endif

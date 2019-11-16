@@ -29,7 +29,7 @@ int findTaggedElements(struct tagLList *tagList, struct transLList *transList, i
        {
                //printf("currentKeyWord: %s tag:%s trans: %s\n", currentKeyWord->name, tagList->name, transList->description);        
                foundTrans = findKeyWord(currentKeyWord->name, transList, verbose);
-               //if(foundTrans != NULL) printf("Found:%s %f\t", foundTrans->description, foundTrans->value);
+               //if(foundTrans != NULL) printf("Keyword:(%s)\t%s %f\n", currentKeyWord->name, foundTrans->description, foundTrans->value);
                //if(foundTrans == NULL)
                //printf("Found trans = NULL\n\n");
                
@@ -253,7 +253,7 @@ int findUntaggedElements(struct tagLList *tagList, struct transLList *transList,
                }
                else
                { // Else, add transaction to "no tag" tag
-				//printf("%s is not tagged\n", transList->description);
+				printf("%s is not tagged\n", transList->description);
                  count++;
               
                  // If "no tag" tag don't already exist, create it
@@ -351,4 +351,22 @@ void printKeyWords(struct keyWord *keyWordList, int verbose)
 		printf("%s\n", keyWordList->name);
 		keyWordList = keyWordList->next;
 	}
+}
+
+int getTagCount(struct tagLList *tag, int verbose)
+{
+    if(verbose)
+        printf("Entering: getTagCount: ");
+
+    int count = 0;
+    while(tag != NULL)
+    {
+        count++;
+        tag = tag->next;
+    }
+
+    if(verbose)
+        printf("Count=%d\n", count);
+
+    return count;
 }

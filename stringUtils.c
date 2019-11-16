@@ -1,4 +1,5 @@
 #include "stringUtils.h"
+#include "utils.h"
 
 // Comma to dot
 //--------------
@@ -60,4 +61,45 @@ char *getFileExtension(char *filename)
     else
         return p;
     
+}
+
+int strReplace(char *dest, char *src, char target, char goal)
+{
+    int i = 0, count = 0;
+
+    while(src[i] != '\0')
+    {
+        if(src[i] == target)
+        {
+            dest[i] = goal;
+            count++;
+        }
+        else
+            dest[i] = src[i];
+        
+        i++;
+    }
+
+    dest[i] = '\0';
+
+    return count;
+}
+
+void insertCharacterAtBeginningOfString(char *dest, char *src, char character)
+{
+    int i = 0;
+    char nextChar = src[0];
+    char nextChar2 = src[1];
+
+    dest[0] = character;
+
+    while(src[i] != '\0')
+    {
+        dest[i+1] = nextChar;
+        nextChar = nextChar2;
+        nextChar2 = src[i+2];
+
+        i++;
+    }
+    dest[i+1] = '\0';
 }
