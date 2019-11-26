@@ -605,19 +605,19 @@ FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbos
         }
 
         //initHtmlTableFile(fp);
-        writeLegendPositionToHtmlTableFile(fp, "Test", 1.4);
-        writeCategoryPositionToHtmlTableFile(fp, "char *categoryId", 200);
+        //writeLegendPositionToHtmlTableFile(fp, "Test", 1.4);
+        //writeCategoryPositionToHtmlTableFile(fp, "char *categoryId", 200);
         //writeLabelPositionToHtmlTableFile(fp, "Tjobla", 600);
-        writeEndStylingStartDataToHtmlTableFile(fp);
+        //writeEndStylingStartDataToHtmlTableFile(fp);
         //writeLegendNameToHtmlTableFile(fp, "Tjobla2");
-        writeEndLegendNamesToHtmlTableFile(fp);
+        //writeEndLegendNamesToHtmlTableFile(fp);
 
         if (verbose)
             printf("writeCalcMonthHtmlCssTable: Creating file %s\n", fileName);
     }
     else if (fp != NULL && close)
     {
-        endHtmlTableFile(fp);
+        //endHtmlTableFile(fp);
         
         if (verbose)
             printf("writeCalcMonthHtmlCssTable: Closing file\n");
@@ -634,29 +634,29 @@ FILE *writeCalcMonthHtmlCssTable(char *fileName, FILE *fp, int close, int verbos
         return (-1);
 
     // Write date
-    writeDateToHtmlTableFile(fp, month, year);
+    //writeDateToHtmlTableFile(fp, month, year);
 
     if (verbose)
         printf("writeCalcMonthHtmlCssTable: %d-%d", month, year);
     
-    writeLabelsToHtmlTableFile(fp, num, argListOfLabels);
+    //writeLabelsToHtmlTableFile(fp, num, argListOfLabels);
 
     for (x = 0; x < num; x++)
     {
 
         tmpValue = argListOfValues[x]; // Retrieve next argument
 
-        writeValueToHtmlTableFile(fp, tmpValue);
+        //writeValueToHtmlTableFile(fp, tmpValue);
         //writeCategoryDataToHtmlTableFile(fp, argListOfLabels[x], argListOfValues, (int)(argListOfValues[x]/100), NULL);
 
         if (verbose)
             printf("\t%.2f", tmpValue);
     }
 
-    writeEndCategoryDataToHtmlTableFile(fp);
+    //writeEndCategoryDataToHtmlTableFile(fp);
 
-    writeTicksToHtmlTableFile(fp, 20, 462.3);
-    endHtmlTableFile(fp);
+    //writeTicksToHtmlTableFile(fp, 20, 462.3);
+    //endHtmlTableFile(fp);
 
     if (verbose)
         printf("\n");
@@ -1051,7 +1051,7 @@ void writeCalcMonthHtmlFile(char *fileName, int startYear, int endYear, int star
         for(int i = 0; i< numberOfTags; i++)
             tagPixelsValues[i] = (int)chartHeight*tagValues[monthIndex][i]/maxTagValue;
 
-        writeCategoryDataToHtmlTableFile(fp, tempTagName, categoryName, tagValues[monthIndex], tagPixelsValues, tagListStart);
+        writeCategoryDataToHtmlTableFile(fp, currentMonth, currentYear, tempTagName, categoryName, tagValues[monthIndex], tagPixelsValues, tagListStart);
 
         /* Free month */
         free(tagValues[monthIndex]);
@@ -1082,20 +1082,24 @@ void writeCalcMonthHtmlFile(char *fileName, int startYear, int endYear, int star
 
 void initHtmlTableFile(FILE *fp, int chartWidth, int chartHeight, int barWidth, int ticksWidth, int gridSegmentWidth, float legendWidth)
 {
-    fprintf(fp, "<!DOCTYPE HTML><html><head><title>My transactions by category</title><style>body,html {height: 100%%;}");
+    fprintf(fp, "<!DOCTYPE HTML><html><head><meta charset=\"UTF-8\"><title>My transactions by category</title><style>body,html {height: 100%%;}");
     fprintf(fp, "body {display: inline-block;justify-content: center;align-items: center;font-family: \"fira-sans-2\", Verdana, sans-serif;}");
     fprintf(fp, "#q-graph {display: block;position: absolute;width: %dpx;height: %dpx;margin: 1.1em 0 0;padding: 0;background: transparent;font-size: 11px;}", chartWidth, chartHeight);
     fprintf(fp, "#q-graph caption {caption-side: top;width: 100px; text-transform: uppercase;letter-spacing: .5px;position: fixed;z-index: 10;font-weight: bold;left: 50%%;}");
-    fprintf(fp, "#q-graph tr,#q-graph th,#q-graph td {position: absolute;bottom: 0;width: %dpx;", gridSegmentWidth);
+    fprintf(fp, "#q-graph .qtr,#q-graph th,#q-graph .bar {position: absolute;bottom: 0;width: %dpx;", gridSegmentWidth);
     fprintf(fp, "z-index: 2;margin: 0;padding: 0;text-align: center;}");
     fprintf(fp, "#q-graph td {transition: all .3s ease;}");
-    fprintf(fp, "#q-graph td:hover {background-color: desaturate(#85144b, 100);	opacity: .9;color: white;}");
-    fprintf(fp, "#q-graph thead tr {position: fixed;right: -100px;top: 100px;bottom: auto;margin: -2.5em 0 0 5em;}");
+    fprintf(fp, "#q-graph .bar:hover {background-color: desaturate(#85144b, 100);	opacity: .9;color: white;}");
+    fprintf(fp, "#q-graph thead tr {position: fixed;right: 130px;top: 100px;bottom: auto;margin: -2.5em 0 0 5em;}");
     fprintf(fp, "#q-graph thead th {position: aboslute; width: %fem;height: auto;padding: 0.5em 1em;}", legendWidth);
-    fprintf(fp, " #q-graph tbody tr {height: %dpx;	padding-top: 2px;border-right: 1px dotted #C4C4C4;color: #AAA;}", chartHeight);
+    fprintf(fp, " #q-graph tbody .qtr {height: %dpx;	padding-top: 2px;border-right: 1px dotted #C4C4C4;color: #AAA;}", chartHeight);
     fprintf(fp, "#q-graph tbody th {bottom: -1.75em;vertical-align: top;font-weight: normal;color: #333;}");
     fprintf(fp, "#q-graph .bar {width: %dpx;border: 1px solid;border-bottom: none;color: #000;}", barWidth);
     fprintf(fp, "#q-graph .bar p {position: relative; transform: rotate(-90deg); bottom: 25px; margin: 5px 0 0;padding: 0;opacity: .4;}");
+    fprintf(fp, "#q-graph .bar .transBox {text-align: left;color: black;display: inherit;position: absolute;left: 100%%;width: auto;z-index: 998;color: black;background-color: lightyellow;border-radius: 10px;padding: 1em;}");
+    fprintf(fp, "#q-graph .bar .transLine {font: 10px/1.0 'Lucida Grande', sans-serif;color: black;z-index: 999;}");
+    fprintf(fp, "#q-graph .bar .transBox, #q-graph .bar .transBox .transLine {transition-duration: 0.5s;transition-delay: 0.5s;visibility: hidden;opacity: 0;}");
+    fprintf(fp, "#q-graph .bar:hover .transBox, #q-graph .bar:hover .transBox .transLine {visibility: visible;opacity: 1;}");
     fprintf(fp, "#ticks {position: fixed;left: 2px;width: %dpx;height: %dpx;z-index: 1;	margin: 1.1em 1.1em 0;font-size: 10px;font-family: \"fira-sans-2\", Verdana, sans-serif;}", ticksWidth, chartHeight);
     fprintf(fp, "#ticks .tick {	position: relative;	border-bottom: 1px dotted #C4C4C4;width: %dpx;}", chartWidth);
     fprintf(fp, "#ticks .tick p {position: absolute;left: -5em;	top: -0.8em;margin: 0 0 0 4em;}");
@@ -1131,18 +1135,39 @@ void writeEndLegendNamesToHtmlTableFile(FILE *fp)
     fprintf(fp, "</tr></thead><tbody>");
 }
 
-void writeCategoryDataToHtmlTableFile(FILE *fp, char *categoryId, char *categoryName, float dataList[], int *dataPixelList, struct tagLList *tag)
+void writeCategoryDataToHtmlTableFile(FILE *fp, int month, int year, char *categoryId, char *categoryName, float dataList[], int *dataPixelList, struct tagLList *tag)
 {
-    fprintf(fp, "<tr class=\"qtr\" id=\"%s\"><th scope=\"row\">%s</th>", categoryId, categoryName);
-
     int i = 0;
-    char tempTagName[50];
+    char tempTagName[50], date[50];
+    struct taggedTransLList *currentTransaction = tag->transList;
+
+    fprintf(fp, "<tr class=\"qtr\" id=\"%s\"><th scope=\"row\">%s</th>", categoryId, categoryName);
 
     while(tag != NULL)
     {
         strReplace(tempTagName, tag->name, ' ', '_');
         fprintf(fp, "<td class=\"%s bar\"style=\"height: %dpx;\">", tempTagName, dataPixelList[i]);
-        fprintf(fp, "<p>%0.2f</p></td>", dataList[i]);
+        fprintf(fp, "<p>%0.2f</p>", dataList[i]);
+        fprintf(fp, "<table class=\"transBox\"><tbody>");
+
+        currentTransaction = tag->transList;
+
+        while (currentTransaction != NULL)
+        {
+            if (currentTransaction->trans->month == month && currentTransaction->trans->year == year)
+            {
+                sprintf(date, "%d/%d %d", currentTransaction->trans->day, currentTransaction->trans->month, currentTransaction->trans->year);
+
+                fprintf(fp, "<tr class=\"transLine\">");
+                fprintf(fp, "<td class=\"date\">%s</td>", date);
+                fprintf(fp, "<td class=\"description\">%s</td>", currentTransaction->trans->description);
+                fprintf(fp, "<td class=\"value\">%.2f</td></tr>", currentTransaction->trans->value);
+            }
+
+            currentTransaction = currentTransaction->next;
+        }
+
+        fprintf(fp, "</tbody></table></td>");
 
         i++;
         tag = tag->next;

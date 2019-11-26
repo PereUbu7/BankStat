@@ -259,7 +259,7 @@ int cmpTransDates(struct transLList *trans1, struct transLList *trans2, int verb
     }
     else if( trans1->year > trans2->year )
          return(0);    
-    
+    return(0);
 }
 
 

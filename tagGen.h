@@ -99,7 +99,7 @@ void writeLegendNameToHtmlTableFile(FILE *fp, char *labelClass, char *labelName)
 
 void writeEndLegendNamesToHtmlTableFile(FILE *fp);
 
-void writeCategoryDataToHtmlTableFile(FILE *fp, char *categoryId, char *categoryName, float dataList[], int dataPixelList[], struct tagLList *tag);
+void writeCategoryDataToHtmlTableFile(FILE *fp, int month, int year, char *categoryId, char *categoryName, float dataList[], int dataPixelList[], struct tagLList *tag);
 
 void writeEndCategoryDataToHtmlTableFile(FILE *fp);
 
