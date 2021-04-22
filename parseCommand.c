@@ -157,7 +157,7 @@ int main(int argc, char **argv)
     putchar('\n');
   }
 
-  system("PAUSE");
+  //system("PAUSE");
 
   exit(0);
 }

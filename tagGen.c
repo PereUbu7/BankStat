@@ -9,7 +9,7 @@ struct tagLList *readTagToLList(FILE *fp, int verbose)
 
     struct tagLList *tags, *startTag = NULL;
 
-    int tmpLineLength = 50, tmpWordLength = 50;
+    int tmpLineLength = 100, tmpWordLength = 100;
     int createRelation = 0;
 
     char tmpLine[tmpLineLength];
@@ -23,14 +23,14 @@ struct tagLList *readTagToLList(FILE *fp, int verbose)
     {
 
         // Read a line. Hopefully a [tag] line
-        if (!createRelation && fgets(tmpLine, tmpLineLength - 1, fp) == NULL)
+        if (fgets(tmpLine, tmpLineLength - 1, fp) == NULL)
         {
             if (verbose)
                 printf("readTagToLList: Exiting\n\n");
 
             return (startTag);
         }
-
+        
         // if line starts with '[' and has a ']' somewhere afterwards, then...
         if (tmpLine[0] == '[' && (endBracketPos = strchr((char *)tmpLine + 1, ']')) != NULL)
         {
@@ -39,7 +39,7 @@ struct tagLList *readTagToLList(FILE *fp, int verbose)
 
             // Set terminating NULL-character after tmpWord
             tmpWord[endBracketPos - tmpLine - 1] = '\0';
-
+            
             // Create struct relation with new sibbling
             if (createRelation)
             {
@@ -77,7 +77,7 @@ struct tagLList *readTagToLList(FILE *fp, int verbose)
 
                     return (startTag);
                 }
-
+                
                 // If new [tag] found; break little loop and go into big again
                 if (tmpLine[0] == '[' && (endBracketPos = strchr((char *)tmpLine + 1, ']')) != NULL)
                 {
@@ -121,6 +121,8 @@ struct tagLList *readTagToLList(FILE *fp, int verbose)
                 }
                 else if (tmpLine[0] == '\n')
                 {
+                    if(verbose)
+                        printf("Found empty line, expecting end of keywords\n");
                     childPosition = NULL;
                     createRelation = 1;
                     break;
@@ -128,7 +130,11 @@ struct tagLList *readTagToLList(FILE *fp, int verbose)
             }
         }
         else
-            createRelation = 0;
+        {
+            if(verbose)
+                printf("expected new tag, but didn't find one\n");
+            createRelation = 1;
+        }
     }
 
     if (verbose)
